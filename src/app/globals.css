@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BRAND TOKENS — single source of truth for the entire application.
+   Extracted from the official NIMechE logo (gear = orange, ring = green,
+   inner gear = gold, derrick = red). Change ONE line below and every
+   screen, component and state in the app follows.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --color-primary: #016737;            /* NIMechE green  (logo ring)          */
+  --color-primary-dark: #014d29;       /* hover / pressed                     */
+  --color-primary-soft: #e5f2eb;       /* tinted backgrounds                  */
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #ff6704;          /* NIMechE orange (logo gear)          */
+  --color-secondary-dark: #d95600;
+  --color-secondary-soft: #ffeee1;
+  --color-secondary-foreground: #ffffff;
+
+  --color-accent: #ffb109;             /* NIMechE gold   (inner gear)         */
+  --color-accent-dark: #d99500;
+  --color-accent-soft: #fff6e0;
+  --color-accent-foreground: #231a00;
+
+  --color-danger: #c53d3f;             /* NIMechE red    (oil derrick)        */
+  --color-danger-soft: #fbeaea;
+  --color-danger-foreground: #ffffff;
+
+  --color-success: #016737;
+  --color-success-soft: #e5f2eb;
+  --color-success-foreground: #ffffff;
+
+  --color-ink: #16211b;                /* near-black text (green-tinted)      */
+  --color-ink-soft: #3d4a43;
+  --color-ink-muted: #6b7a72;
+
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f6f8f6;
+  --color-surface-sunken: #edf1ee;
+  --color-line: #dde5df;
+
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display: "Sora", "Inter", "Segoe UI", system-ui, sans-serif;
+
+  /* Accessibility toolbar state (driven by data-attributes on <html>) */
+  --a11y-scale: 100%;
+}
+
+/* ── Accessibility: font scaling ─────────────────────────────────────────── */
+html {
+  font-size: var(--a11y-scale);
+  scroll-behavior: smooth;
+}
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Accessibility: high-contrast mode ───────────────────────────────────── */
+html[data-contrast="high"] {
+  --color-ink: #000000;
+  --color-ink-soft: #111111;
+  --color-ink-muted: #333333;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #ffffff;
+  --color-surface-sunken: #f2f2f2;
+  --color-line: #000000;
+  --color-primary: #004d28;
+  --color-primary-dark: #00331b;
+  --color-secondary: #b34700;
+  --color-secondary-dark: #803300;
+  --color-accent: #8a6100;
+  --color-accent-foreground: #ffffff;
+}
+html[data-contrast="high"] body {
+  -webkit-font-smoothing: none;
+}
+html[data-links="underlined"] a {
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display font-bold tracking-tight text-ink;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-secondary ring-offset-2 ring-offset-surface rounded-sm;
+  }
+  ::selection {
+    @apply bg-accent text-accent-foreground;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply container mx-auto w-full max-w-[1200px] px-4 md:px-6 lg:px-8;
+  }
+  .card {
+    @apply bg-surface border border-line rounded-xl shadow-card;
+  }
+  .prose-body {
+    @apply text-ink-soft leading-relaxed whitespace-pre-line;
+  }
+  .section-title {
+    @apply font-display text-2xl md:text-3xl font-bold text-ink;
+  }
+  .section-kicker {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-secondary;
+  }
+  .skip-link {
+    @apply fixed left-4 top-4 z-[100] -translate-y-24 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform focus:translate-y-0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .gear-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.16) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
