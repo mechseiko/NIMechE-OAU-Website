@@ -52,7 +52,7 @@ export default function RegisterPage() {
           </p>
           {firstAccount && (
             <p className="mx-auto mt-3 max-w-sm rounded-lg bg-accent-soft px-4 py-2 text-xs font-semibold text-accent-dark">
-              First account on this deployment becomes the Super Admin — register the chapter's official
+              First account on this deployment becomes the Super Admin — register the chapter’s official
               account first.
             </p>
           )}

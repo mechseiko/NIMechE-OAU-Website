@@ -13,7 +13,8 @@ import { getDoc, runTransaction, serverTimestamp, setDoc } from "firebase/firest
 import { auth, db } from "./firebase";
 import { COL, ref } from "./db";
 import { nowIso } from "./utils";
-import type { Genesis, RegisterInput, UserProfile } from "@/types";
+import type { Genesis, UserProfile } from "@/types";
+import type { RegisterInput } from "@/lib/validation";
 
 /**
  * First-ever account becomes Super Admin via an atomic "genesis" claim:

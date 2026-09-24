@@ -3,10 +3,10 @@
 import { useState } from "react";
 import {
   Accessibility,
+  Activity,
   Contrast,
   Link2,
   Minus,
-  Motion,
   Plus,
   RotateCcw,
   X,
@@ -86,7 +86,7 @@ export function AccessibilityToolbar() {
             />
             <ToggleRow
               label="Reduce motion"
-              icon={<Motion className="h-4 w-4" aria-hidden />}
+              icon={<Activity className="h-4 w-4" aria-hidden />}
               active={a11y.reducedMotion}
               onClick={a11y.toggleMotion}
             />

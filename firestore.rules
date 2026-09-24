@@ -1,0 +1,119 @@
+rules_version = '2';
+
+// NIMechE OAU-SC — Firestore security rules
+// Roles: super_admin > admin > editor > member. The very first account ever
+// registered claims "genesis" and becomes super_admin; everyone after is a member.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isEditor() { return signedIn() && role() in ['editor', 'admin', 'super_admin']; }
+    function isAdmin()  { return signedIn() && role() in ['admin', 'super_admin']; }
+    function isSuper()  { return signedIn() && role() == 'super_admin'; }
+
+    // True only while no one has claimed the bootstrap document yet.
+    function genesisOpen() {
+      return !exists(/databases/$(database)/documents/genesis/genesis)
+        || !get(/databases/$(database)/documents/genesis/genesis).data.claimed;
+    }
+
+    // A member reading their own fee record (matric number matches their profile).
+    function ownsFee() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.matricNumber == resource.data.matricNumber;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ---------- bootstrap ----------
+    match /genesis/{docId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.claimedBy == request.auth.uid;
+      allow update: if signedIn() && resource.data.claimedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ---------- users & roles ----------
+    match /users/{uid} {
+      // Own doc, or any admin (the users & roles screen).
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+
+      // Create your own profile. You may only self-assign super_admin while the
+      // genesis slot is still open; otherwise new accounts are members.
+      allow create: if signedIn() && request.auth.uid == uid
+        && (request.resource.data.role == 'member'
+            || (genesisOpen() && request.resource.data.role == 'super_admin'));
+
+      // Update your own profile but never your own role; super_admin manages roles.
+      allow update: if signedIn() && (
+        (request.auth.uid == uid && !('role' in changedKeys()))
+        || isSuper()
+      );
+
+      allow delete: if isSuper();
+    }
+
+    // ---------- site settings ----------
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- public content ----------
+    // Anyone can read. Editors can create drafts; only admins edit/delete/publish.
+    match /news/{id}          { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /events/{id}        { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /projects/{id}      { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /opportunities/{id} { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /resources/{id}     { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /executives/{id}    { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /divisions/{id}     { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /committees/{id}    { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /achievements/{id}  { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /gallery/{id}       { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+    match /showcase/{id}      { allow read: if true; allow create: if isEditor(); allow update, delete: if isAdmin(); }
+
+    // ---------- public form submissions ----------
+    // Anyone may submit; only admins may read/manage the inbox.
+    match /contacts/{id} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+    match /alumni/{id} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ---------- elections ----------
+    match /elections/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /positions/{id}   { allow read: if true; allow write: if isAdmin(); }
+    match /candidates/{id}  { allow read: if true; allow write: if isAdmin(); }
+
+    // One vote per voter per position is enforced by the deterministic document
+    // id (${electionId}_${positionId}_${voterUid}) plus create-only rules: a
+    // second attempt hits an existing doc and is rejected.
+    match /votes/{voteId} {
+      allow read: if true; // results are public once an election closes
+      allow create: if signedIn()
+        && request.resource.data.voterUid == request.auth.uid
+        && voteId == request.resource.data.electionId + '_' + request.resource.data.positionId + '_' + request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- departmental fees ----------
+    match /fees/{id} {
+      allow read: if isAdmin() || ownsFee();
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -15,9 +15,10 @@ import { useToast } from "@/context/ToastProvider";
 import { useCollection } from "@/hooks/useCollection";
 import { COL, updateDocRaw } from "@/lib/db";
 import { effectiveStatus } from "@/lib/elections";
-import { errorMessage, formatDateTime, ROLE_LABELS } from "@/lib/utils";
+import { errorMessage, formatDateTime } from "@/lib/utils";
 import { profileSchema, type ProfileInput } from "@/lib/validation";
-import type { Election, FeeRecord, Vote } from "@/types";
+import { ROLE_LABELS } from "@/types";
+import type { Election, FeeRecord, Vote as VoteRecord } from "@/types";
 
 const LEVELS = ["100", "200", "300", "400", "500", "Postgraduate", "Alumni"];
 
@@ -25,7 +26,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
-  const { data: votes } = useCollection<Vote>(COL.votes);
+  const { data: votes } = useCollection<VoteRecord>(COL.votes);
   const { data: elections } = useCollection<Election>(COL.elections);
   const { data: fees } = useCollection<FeeRecord>(COL.fees);
 
@@ -140,7 +141,7 @@ export default function DashboardPage() {
               <Vote className="h-5 w-5 text-secondary" aria-hidden /> My voting record
             </h2>
             {myVotes.length === 0 ? (
-              <p className="text-sm text-ink-muted">You haven't cast a vote yet.</p>
+              <p className="text-sm text-ink-muted">You haven’t cast a vote yet.</p>
             ) : (
               <ul className="space-y-2">
                 {myVotes.map((vote) => {

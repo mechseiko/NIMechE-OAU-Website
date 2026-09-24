@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   CalendarDays,
   Contact,
+  Database,
   FileText,
   Lightbulb,
   Mail,
@@ -14,10 +16,12 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthProvider";
+import { useToast } from "@/context/ToastProvider";
 import { useCollection } from "@/hooks/useCollection";
 import { COL } from "@/lib/db";
 import { effectiveStatus } from "@/lib/elections";
-import { formatDateTime } from "@/lib/utils";
+import { seedDefaults } from "@/lib/seed-data";
+import { errorMessage, formatDateTime } from "@/lib/utils";
 import {
   ELECTION_STATUS_LABELS,
   type ContactSubmission,
@@ -25,19 +29,40 @@ import {
   type EventItem,
   type NewsPost,
   type Project,
+  type TechnicalDivision,
 } from "@/types";
 
 export default function AdminOverview() {
-  const { profile } = useAuth();
+  const { profile, canEdit } = useAuth();
+  const { toast } = useToast();
   const { data: news } = useCollection<NewsPost>(COL.news);
   const { data: events } = useCollection<EventItem>(COL.events);
   const { data: projects } = useCollection<Project>(COL.projects);
   const { data: contacts } = useCollection<ContactSubmission>(COL.contacts);
   const { data: elections } = useCollection<Election>(COL.elections);
   const { data: users } = useCollection<{ id: string }>(COL.users);
+  const { data: divisions } = useCollection<TechnicalDivision>(COL.divisions);
+  const [seeding, setSeeding] = useState(false);
 
   const unread = contacts.filter((c) => !c.read).length;
   const activeElection = elections.find((e) => effectiveStatus(e) === "active");
+  const needsSeed = divisions.length === 0;
+
+  async function runSeed() {
+    setSeeding(true);
+    try {
+      const result = await seedDefaults();
+      toast(
+        result.divisions || result.settings
+          ? `Starter content loaded (${result.divisions} divisions${result.settings ? " + site settings" : ""}).`
+          : "Starter content already present — nothing to do.",
+      );
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const stats = [
     { label: "Published news", value: news.filter((n) => n.published).length, icon: <Newspaper className="h-5 w-5" aria-hidden />, href: "/admin/news" },
@@ -50,8 +75,26 @@ export default function AdminOverview() {
     <div className="space-y-8">
       <header>
         <h1 className="font-display text-2xl font-bold text-ink">Welcome back, {profile?.displayName}</h1>
-        <p className="mt-1 text-sm text-ink-muted">Here's what's happening across the chapter website.</p>
+        <p className="mt-1 text-sm text-ink-muted">Here’s what’s happening across the chapter website.</p>
       </header>
+
+      {needsSeed && canEdit && (
+        <div className="card flex flex-wrap items-center justify-between gap-4 border-primary bg-primary-soft p-5">
+          <div className="flex items-start gap-3">
+            <Database className="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden />
+            <div>
+              <p className="font-bold text-ink">Set up starter content</p>
+              <p className="text-xs text-ink-muted">
+                Load the seven technical divisions and default site settings to get going. Everything stays fully
+                editable, and this only fills empty collections — it won&rsquo;t overwrite your content.
+              </p>
+            </div>
+          </div>
+          <Button onClick={runSeed} loading={seeding}>
+            Load starter content
+          </Button>
+        </div>
+      )}
 
       {activeElection && (
         <div className="card flex flex-wrap items-center justify-between gap-4 border-secondary bg-secondary-soft p-5">
@@ -121,9 +164,9 @@ export default function AdminOverview() {
           <FileText className="h-4 w-4 text-secondary" aria-hidden /> Handover checklist for the next administration
         </h2>
         <ul className="space-y-1 text-sm text-ink-soft">
-          <li>· Create next session's election early (draft), add positions & candidates, then schedule it.</li>
+          <li>· Create next session’s election early (draft), add positions & candidates, then schedule it.</li>
           <li>· Archive the outgoing executive council by switching their profiles to “past”.</li>
-          <li>· Import the new session's dues list under Fee Verification before polls open.</li>
+          <li>· Import the new session’s dues list under Fee Verification before polls open.</li>
           <li>· Update Site Settings: administration year, hero text and announcement bar.</li>
         </ul>
       </section>

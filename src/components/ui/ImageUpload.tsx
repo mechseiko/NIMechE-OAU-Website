@@ -2,8 +2,10 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { getIdToken } from "firebase/auth";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { Button } from "./Button";
+import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
 import { cn, errorMessage } from "@/lib/utils";
 
@@ -37,13 +39,16 @@ export function ImageUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   async function handleFile(file: File) {
     setUploading(true);
     try {
+      const token = user ? await getIdToken(user) : "";
       const form = new FormData();
       form.append("file", file);
       form.append("folder", folder);
+      form.append("token", token);
       const response = await fetch("/api/upload", { method: "POST", body: form });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload?.error ?? "Upload failed");

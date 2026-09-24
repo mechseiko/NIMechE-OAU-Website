@@ -49,7 +49,7 @@ export default function ChallengePage() {
           <Trophy className="mb-3 h-7 w-7 text-secondary" aria-hidden />
           <h2 className="font-bold">3 · Exhibition & defence</h2>
           <p className="mt-2 text-sm text-ink-soft">
-            Prototypes are exhibited at the annual conference; the jury crowns the chapter's representative
+            Prototypes are exhibited at the annual conference; the jury crowns the chapter’s representative
             for the NIMechE national competition.
           </p>
         </article>

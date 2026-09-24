@@ -4,7 +4,7 @@ import { use, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Ballot, CheckCircle2, Lock, ShieldAlert } from "lucide-react";
+import { Vote as VoteIcon, CheckCircle2, Lock, ShieldAlert } from "lucide-react";
 import { writeBatch } from "firebase/firestore";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -126,7 +126,7 @@ export default function VotePage({ params }: { params: Promise<{ electionId: str
       ) : !eligibility.eligible ? (
         <div className="card border-danger/30 bg-danger-soft p-8 text-center">
           <ShieldAlert className="mx-auto h-10 w-10 text-danger" aria-hidden />
-          <h2 className="mt-3 text-xl font-bold text-danger">You're not eligible to vote yet</h2>
+          <h2 className="mt-3 text-xl font-bold text-danger">You’re not eligible to vote yet</h2>
           <ul className="mx-auto mt-3 max-w-md space-y-1 text-sm text-ink-soft">
             {eligibility.reasons.map((reason) => (
               <li key={reason}>· {reason}</li>
@@ -204,7 +204,7 @@ export default function VotePage({ params }: { params: Promise<{ electionId: str
                   {chosenCount} of {pendingPositions.length} position{pendingPositions.length === 1 ? "" : "s"} selected
                 </p>
                 <Button type="submit" size="lg" disabled={chosenCount === 0}>
-                  <Ballot className="h-5 w-5" aria-hidden /> Submit ballot
+                  <VoteIcon className="h-5 w-5" aria-hidden /> Submit ballot
                 </Button>
               </div>
               <p className="mt-2 text-xs text-ink-muted">
