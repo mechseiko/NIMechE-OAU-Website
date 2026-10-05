@@ -9,49 +9,33 @@ import {
   updateProfile,
   type User,
 } from "firebase/auth";
-import { getDoc, runTransaction, serverTimestamp, setDoc } from "firebase/firestore";
-import { auth, db } from "./firebase";
+import { getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { auth } from "./firebase";
 import { COL, ref } from "./db";
-import { nowIso } from "./utils";
-import type { Genesis, UserProfile } from "@/types";
+import type { UserProfile } from "@/types";
 import type { RegisterInput } from "@/lib/validation";
 
 /**
- * First-ever account becomes Super Admin via an atomic "genesis" claim:
- * the transaction flips meta/genesis.claimed, so concurrent sign-ups can
- * never both receive the role. Everyone after that is a member.
+ * Every new account is created as a plain "member". Administrator access is
+ * granted only by setting `role: "admin"` on the user's profile document in
+ * Firestore (there is no self-serve or first-account bootstrap). The /admin
+ * dashboard and the security rules both require role === "admin".
  */
 export async function registerAccount(input: RegisterInput): Promise<User> {
   const credential = await createUserWithEmailAndPassword(auth(), input.email, input.password);
   const user = credential.user;
   await updateProfile(user, { displayName: input.displayName });
 
-  await runTransaction(db(), async (tx) => {
-    const genesisRef = ref(COL.genesis, "genesis");
-    const userRef = ref(COL.users, user.uid);
-    const genesisSnap = await tx.get(genesisRef);
-    const genesis = genesisSnap.exists() ? (genesisSnap.data() as Genesis) : null;
-    const isFirst = !genesis || genesis.claimed !== true;
-
-    const profile: UserProfile = {
-      uid: user.uid,
-      email: user.email ?? input.email,
-      displayName: input.displayName,
-      role: isFirst ? "super_admin" : "member",
-      matricNumber: input.matricNumber || undefined,
-      level: input.level || undefined,
-      createdAt: nowIso(),
-    };
-    tx.set(userRef, { ...profile, createdAt: serverTimestamp() });
-    if (isFirst) {
-      tx.set(genesisRef, {
-        id: "genesis",
-        claimed: true,
-        claimedBy: user.uid,
-        claimedAt: nowIso(),
-      });
-    }
-  });
+  const profile: UserProfile = {
+    uid: user.uid,
+    email: user.email ?? input.email,
+    displayName: input.displayName,
+    role: "member",
+    matricNumber: input.matricNumber || undefined,
+    level: input.level || undefined,
+    createdAt: new Date().toISOString(),
+  };
+  await setDoc(ref(COL.users, user.uid), { ...profile, createdAt: serverTimestamp() });
 
   return user;
 }
@@ -68,24 +52,14 @@ export async function loginWithGoogle(): Promise<User> {
   const userRef = ref(COL.users, user.uid);
   const snap = await getDoc(userRef);
   if (!snap.exists()) {
-    const genesisSnap = await getDoc(ref(COL.genesis, "genesis"));
-    const isFirst = !genesisSnap.exists() || (genesisSnap.data() as Genesis).claimed !== true;
     await setDoc(userRef, {
       uid: user.uid,
       email: user.email ?? "",
       displayName: user.displayName ?? "Member",
       photoURL: user.photoURL ?? undefined,
-      role: isFirst ? "super_admin" : "member",
+      role: "member",
       createdAt: serverTimestamp(),
     });
-    if (isFirst) {
-      await setDoc(ref(COL.genesis, "genesis"), {
-        id: "genesis",
-        claimed: true,
-        claimedBy: user.uid,
-        claimedAt: nowIso(),
-      });
-    }
   }
   return user;
 }

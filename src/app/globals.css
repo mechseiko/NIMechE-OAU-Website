@@ -94,7 +94,7 @@ html[data-links="underlined"] a {
     text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4 {
-    @apply font-display font-bold tracking-tight text-ink;
+    @apply font-display font-bold tracking-tight;
   }
   :focus-visible {
     @apply outline-none ring-2 ring-secondary ring-offset-2 ring-offset-surface rounded-sm;

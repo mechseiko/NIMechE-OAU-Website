@@ -21,7 +21,6 @@ import { nowIso } from "./utils";
 
 export const COL = {
   users: "users",
-  genesis: "genesis",
   settings: "settings",
   news: "news",
   events: "events",

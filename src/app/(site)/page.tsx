@@ -60,7 +60,7 @@ export default function HomePage() {
             <Badge tone="accent" className="mb-4">
               OAU Students&apos; Chapter · Ile-Ife
             </Badge>
-            <h1 className="text-4xl font-bold leading-tight text-balance md:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-bold leading-tight text-balance text-primary-foreground md:text-5xl lg:text-6xl">
               {settings?.heroTitle ??
                 "Engineering excellence, manufactured for man's comfort."}
             </h1>

@@ -1,4 +1,4 @@
-export type Role = "super_admin" | "admin" | "editor" | "member";
+export type Role = "admin" | "member";
 
 export interface UserProfile {
   uid: string;
@@ -10,13 +10,6 @@ export interface UserProfile {
   level?: string;
   phone?: string;
   createdAt: string;
-}
-
-export interface Genesis {
-  id: "genesis";
-  claimed: boolean;
-  claimedBy?: string;
-  claimedAt?: string;
 }
 
 export interface SiteSettings {
@@ -313,9 +306,7 @@ export interface FeeRecord {
 }
 
 export const ROLE_LABELS: Record<Role, string> = {
-  super_admin: "Super Admin",
   admin: "Administrator",
-  editor: "Editor",
   member: "Member",
 };
 

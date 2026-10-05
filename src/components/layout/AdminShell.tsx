@@ -33,7 +33,6 @@ interface NavItem {
   href: string;
   label: string;
   icon: ReactNode;
-  superOnly?: boolean;
 }
 
 const GROUPS: { title: string; items: NavItem[] }[] = [
@@ -67,7 +66,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/elections", label: "Elections", icon: <Vote className="h-4 w-4" aria-hidden /> },
       { href: "/admin/fees", label: "Fee Verification", icon: <Wallet className="h-4 w-4" aria-hidden /> },
-      { href: "/admin/users", label: "Users & Roles", icon: <ShieldCheck className="h-4 w-4" aria-hidden />, superOnly: true },
+      { href: "/admin/users", label: "Users & Roles", icon: <ShieldCheck className="h-4 w-4" aria-hidden /> },
     ],
   },
   {
@@ -86,7 +85,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { profile, isSuperAdmin } = useAuth();
+  const { profile } = useAuth();
 
   const sidebar = (
     <div className="flex h-full flex-col">
@@ -101,7 +100,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </div>
       <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">
         {GROUPS.map((group) => {
-          const items = group.items.filter((item) => !item.superOnly || isSuperAdmin);
+          const items = group.items;
           if (items.length === 0) return null;
           return (
             <div key={group.title} className="mb-5">

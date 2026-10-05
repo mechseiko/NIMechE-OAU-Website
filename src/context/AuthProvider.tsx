@@ -21,7 +21,6 @@ interface AuthContextValue {
   loading: boolean;
   role: Role | null;
   isAdmin: boolean;
-  isSuperAdmin: boolean;
   canEdit: boolean;
 }
 
@@ -31,7 +30,6 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   role: null,
   isAdmin: false,
-  isSuperAdmin: false,
   canEdit: false,
 });
 
@@ -66,14 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(() => {
     const role = profile?.role ?? null;
+    const isAdmin = role === "admin";
     return {
       user,
       profile,
       loading,
       role,
-      isAdmin: role === "admin" || role === "super_admin",
-      isSuperAdmin: role === "super_admin",
-      canEdit: role === "admin" || role === "super_admin" || role === "editor",
+      isAdmin,
+      canEdit: isAdmin,
     };
   }, [user, profile, loading]);
 

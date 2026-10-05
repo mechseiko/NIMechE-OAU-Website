@@ -11,7 +11,7 @@ import { isFirebaseConfigured } from "@/lib/firebase";
 import Link from "next/link";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading, canEdit } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -32,13 +32,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading || !user) return <Spinner label="Verifying your credentials" className="min-h-screen" />;
 
-  if (!canEdit) {
+  if (!isAdmin) {
     return (
       <main id="main" className="flex min-h-screen items-center justify-center p-6">
         <EmptyState
           icon={<ShieldAlert className="h-6 w-6" aria-hidden />}
-          title="Access restricted"
-          message="Your account doesn't have a content-management role. Ask a Super Admin to grant you Editor or Administrator access."
+          title="Administrators only"
+          message="This area is restricted to accounts whose profile role is “admin”. Ask an existing administrator to set role: admin on your user document in Firestore."
           action={
             <Link href="/">
               <Button variant="outline">Back to site</Button>
