@@ -23,6 +23,10 @@ export const metadata: Metadata = {
     "engineering students",
     "elections",
   ],
+  icons: {
+    icon: "/images/logo-nimeche.jpg",
+    apple: "/images/logo-nimeche.jpg",
+  },
   openGraph: {
     title: "NIMechE OAU Students' Chapter",
     description: "Manufacturing for man's comfort — the home of Mechanical Engineering students at OAU.",
